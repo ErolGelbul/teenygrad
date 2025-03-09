@@ -1,7 +1,20 @@
-# example_usage.py
+#!/usr/bin/env python
+import os, sys
 
-from tensor import Tensor
-from linear_regression import linear_regression
+from core.tensor import Tensor
+
+# Ensure the project root is in the sys.path for proper module resolution
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
+def linear_regression(X, W, b):
+    """
+    Simple linear regression model: Y = X @ W + b
+    X: input features as a Tensor (2D: [samples x features])
+    W: weights as a Tensor (2D: [features x 1])
+    b: bias as a Tensor (scalar or a Tensor that broadcasts)
+    """
+    return X @ W + b
 
 
 def main():
@@ -21,6 +34,8 @@ def main():
     print(X)
     print("\nPredictions (Y = 2 * X + 1):")
     print(predictions)
+
+
 
 
 if __name__ == "__main__":
