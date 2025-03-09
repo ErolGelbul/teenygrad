@@ -1,6 +1,3 @@
-
-
-
 class Tensor:
     def __init__(self, data):
         """
@@ -28,10 +25,18 @@ class Tensor:
 
     def __add__(self, other):
         if isinstance(other, Tensor):
+            # Check if the scalar is broadcasting
+            if other.shape == ():
+                # other is a scalar tensor, so add its value to each element of self
+                return Tensor(self._elementwise_op_scalar(lambda a: a + other.data))
+            elif self.shape == ():
+                # self is a scalar tensor, so add its value to each element of other
+                return Tensor(other._elementwise_op_scalar(lambda a: self.data + a))
+            else:
+                if self.shape != other.shape:
+                    raise ValueError("Shapes do not match for element-wise operation")
+                return Tensor(self.elementwise_op(other, lambda a, b: a + b))
             return Tensor(self._elementwise_op(other, lambda a, b: a + b))
-        else:
-            # Assume other is a scalar
-            return Tensor(self._elementwise_op_scalar(lambda a: a + other))
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -72,6 +77,7 @@ class Tensor:
                 return [recursive_apply(item) for item in x]
             else:
                 return op(x)
+
         return recursive_apply(self.data)
 
     def __matmul__(self, other):
@@ -80,11 +86,15 @@ class Tensor:
         For tensors A (m x n) and B (n x p), the result will be (m x p).
         """
         if not (len(self.shape) == 2 and len(other.shape) == 2):
-            raise ValueError("Matrix multiplication is only defined for 2D tensors")
+            raise ValueError(
+                "Matrix multiplication is only defined for 2D tensors"
+            )
         m, n = self.shape
         n2, p = other.shape
         if n != n2:
-            raise ValueError("Inner dimensions must match for matrix multiplication")
+            raise ValueError(
+                "Inner dimensions must match for matrix multiplication"
+            )
         result = []
         for i in range(m):
             row = []
@@ -112,7 +122,7 @@ if __name__ == "__main__":
     # Suppose we have 4 data points with 1 feature each.
     X = Tensor([[1], [2], [3], [4]])
     W = Tensor([[2]])  # weight (for the single feature)
-    b = Tensor(1)      # bias (scalar)
-    
+    b = Tensor(1)  # bias (scalar)
+
     predictions = linear_regression(X, W, b)
     print("Predictions:", predictions)
